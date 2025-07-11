@@ -30,16 +30,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to AKS') {
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-                    bat '''
-                    set KUBECONFIG=%KUBECONFIG_FILE%
-                    kubectl apply -f deployment.yaml
-                    kubectl apply -f service.yaml
-                    '''
-                }
-            }
+
         }
     }
 }
