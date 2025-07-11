@@ -15,15 +15,17 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                bat 'docker build -t %IMAGE_NAME% .'
             }
         }
 
         stage('Push Image to ACR') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'acr-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh 'docker login $ACR_LOGIN_SERVER -u $USERNAME -p $PASSWORD'
-                    sh 'docker push $IMAGE_NAME'
+                    bat '''
+                    docker login %ACR_LOGIN_SERVER% -u %USERNAME% -p %PASSWORD%
+                    docker push %IMAGE_NAME%
+                    '''
                 }
             }
         }
@@ -31,8 +33,11 @@ pipeline {
         stage('Deploy to AKS') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-                    sh 'export KUBECONFIG=$KUBECONFIG_FILE'
-                    sh 'kubectl apply -f deployment.yaml'
+                    bat '''
+                    set KUBECONFIG=%KUBECONFIG_FILE%
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+                    '''
                 }
             }
         }
